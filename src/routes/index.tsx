@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import Home from './pages/Home'
 import MovieDetails from './pages/MovieDetails'
 import SignIn from './pages/SignIn'
+import { requiresAuth } from './loaders/requiresAuth'
 
 const router = createBrowserRouter([
   {
@@ -11,7 +12,8 @@ const router = createBrowserRouter([
   },
   {
     path: '/movies/:movieId',
-    Component: MovieDetails
+    Component: MovieDetails,
+    loader: requiresAuth
   },
   {
     path: '/signin',

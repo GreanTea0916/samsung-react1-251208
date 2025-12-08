@@ -1,9 +1,13 @@
 import type { FormEvent } from 'react'
 import api, { ACCESS_TOKEN_NAME } from '@/lib/api'
-import { useNavigate } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 
 export default function SignIn() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  // '/signin'
+  // '/signin?redirectTo=/movies/tt1877830'
+  const redirectTo = searchParams.get('redirectTo')
   
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -18,7 +22,7 @@ export default function SignIn() {
     })
     if (data.token) {
       localStorage.setItem(ACCESS_TOKEN_NAME, data.token)
-      navigate('/')
+      navigate(redirectTo || '/')
     }
   }
 
