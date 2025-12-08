@@ -5,8 +5,6 @@ export default function Home() {
   const count = useCountStore(s => s.count)
   const increase = useCountStore(s => s.increase)
 
-  // const { count, increase } = useCountStore(s => s)
-
   return <>
     <h1>Home Page!</h1>
     <h2 onClick={increase}>Count: {count}</h2>
