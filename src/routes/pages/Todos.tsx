@@ -32,18 +32,37 @@ export default function Todos() {
   })
   const { mutateAsync } = useMutation({
     mutationFn: async ({ title }: { title: string }) => {
-      const { data: todo } = await api.post('/', {
-        title
-      })
-      return todo
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      throw new Error('Mutation Error!!!!!!')
+      // const { data: todo } = await api.post('/', {
+      //   title
+      // })
+      // return todo
     },
     onMutate: ({ title }) => {
-      queryClient.getQueryData([])
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      if (prevTodos) {
+        queryClient.setQueryData(
+          ['todos'],
+          [
+            {
+              id: Math.random().toString(),
+              title
+            },
+            ...prevTodos
+          ]
+        )
+      }
+      return prevTodos
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todos'] })
     },
-    onError: () => {},
+    onError: (_error, _payload, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+      }
+    },
     onSettled: () => {}
   })
 
