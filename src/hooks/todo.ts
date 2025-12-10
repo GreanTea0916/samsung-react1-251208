@@ -68,3 +68,60 @@ export function useCreateTodo() {
     onSettled: () => {}
   })
 }
+
+export function useUpdateTodo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (todo: Todo) => {
+      const { data: updatedTodo } = await api.put(`/${todo.id}`, {
+        title: todo.title,
+        done: todo.done
+      })
+      return updatedTodo
+    },
+    onMutate: todo => {
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      if (prevTodos) {
+        queryClient.setQueryData(
+          ['todos'],
+          prevTodos.map(t => (t.id === todo.id ? todo : t))
+        )
+      }
+      return prevTodos
+    },
+    onSuccess: (_updatedTodo, _todo, _prevTodos) => {},
+    onError: (_error, _todo, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+      }
+    },
+    onSettled: (_updatedTodo, _error, _todo, _prevTodos) => {}
+  })
+}
+
+export function useDeleteTodo() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (todo: Todo) => {
+      await api.delete(`/${todo.id}`)
+      return todo
+    },
+    onMutate: todo => {
+      const prevTodos = queryClient.getQueryData<Todo[]>(['todos'])
+      if (prevTodos) {
+        queryClient.setQueryData(
+          ['todos'],
+          prevTodos.filter(t => t.id !== todo.id)
+        )
+      }
+      return prevTodos
+    },
+    onSuccess: () => {},
+    onError: (_error, _todo, prevTodos) => {
+      if (prevTodos) {
+        queryClient.setQueryData(['todos'], prevTodos)
+      }
+    },
+    onSettled: () => {}
+  })
+}

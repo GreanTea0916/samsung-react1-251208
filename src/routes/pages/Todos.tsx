@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { useFetchTodos, useCreateTodo } from '@/hooks/todo'
+import {
+  useFetchTodos,
+  useCreateTodo,
+  useUpdateTodo,
+  useDeleteTodo
+} from '@/hooks/todo'
 import type { Todo } from '@/hooks/todo'
 
 export default function Todos() {
@@ -44,6 +49,8 @@ function TodoItem({ todo }: { todo: Todo }) {
   const [isEditing, setIsEditing] = useState(false)
   const [title, setTitle] = useState(todo.title)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { mutateAsync: updateTodo, isPending: isUpdating } = useUpdateTodo()
+  const { mutateAsync: deleteTodo, isPending: isDeleting } = useDeleteTodo()
 
   useEffect(() => {
     if (isEditing) {
@@ -51,9 +58,20 @@ function TodoItem({ todo }: { todo: Todo }) {
     }
   }, [isEditing])
 
-  function cancelEdit() {
-    setTitle(todo.title)
+  function cancelEdit(title: string = todo.title) {
+    setTitle(title)
     setIsEditing(false)
+  }
+  async function saveTodo() {
+    await updateTodo({
+      ...todo,
+      title
+    })
+    cancelEdit(title)
+  }
+  function removeTodo() {
+    deleteTodo(todo) // mutateAsync(todo)
+    cancelEdit(title)
   }
   return (
     <>
@@ -66,9 +84,13 @@ function TodoItem({ todo }: { todo: Todo }) {
               value={title}
               onChange={e => setTitle(e.target.value)}
             />
-            <button onClick={cancelEdit}>취소</button>
-            <button>저장</button>
-            <button>삭제</button>
+            <button onClick={() => cancelEdit()}>취소</button>
+            <button onClick={() => saveTodo()}>
+              {isUpdating ? '저장 중..' : '저장'}
+            </button>
+            <button onClick={() => removeTodo()}>
+              {isDeleting ? '삭제 중..' : '삭제'}
+            </button>
           </div>
         ) : (
           <div>
